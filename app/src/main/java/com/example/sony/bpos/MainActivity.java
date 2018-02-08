@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Collections;
 
 
-
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1234;
     private static final String ESTIMOTE_PROXIMITY_UUID = "B9407F30-F5F8-466E-AFF9-25556B57FE6D";
@@ -40,10 +39,8 @@ public class MainActivity extends AppCompatActivity {
     List<String> list_device_address_first = new ArrayList<String>();
     List<String> list_device_address_second = new ArrayList<String>();
     List<String> list_device_address_far = new ArrayList<String>();
-    List<Integer> list_rssi_2 = new ArrayList<Integer>();
 
     private static final long SCAN_PERIOD = 7000;
-    private static long WAITING_PERIOD = 3000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     int count;
     int x=0;
     String closest_address;
-    public int scan_number=0;//
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             myEdit.setText("");
@@ -93,23 +89,20 @@ public class MainActivity extends AppCompatActivity {
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    scan_number+=1;
                     mScanning = false;
                     myEdit.append("\n   Total beacon count: " + count);
                     //List<Object> objectList = Arrays.asList(list_rssi.toArray());
                     //Collections.sort(list_rssi, Collections.reverseOrder());
                     //x=list_rssi.get(0); //get first element
                     for (int i=0;i<count;i+=1){
-                        if (list_rssi.get(i)>-70)
+                        if (list_rssi.get(i)>-83)
                             list_device_address_first.add(list_device_address.get(i));
-                        else if (-70 >= list_rssi.get(i) && list_rssi.get(i)>-80)
+                        else if (-83 >= list_rssi.get(i) && list_rssi.get(i)>-90)
                             list_device_address_second.add(list_device_address.get(i));
                         else
                             list_device_address_far.add(list_device_address.get(i));
                     }
-
                     closest_address =list_device_address.get(list_rssi.indexOf(Collections.max(list_rssi)));
-                    myEdit.append("\n   Scan number= "+scan_number);
                     myEdit.append("\n"+list_device_address+"\n");
                     myEdit.append("\n   Address of the closest beacon: \n");
                     myEdit.append(closest_address);
@@ -119,22 +112,6 @@ public class MainActivity extends AppCompatActivity {
                     myEdit.append(Arrays.toString(list_device_address_second.toArray()));
                     myEdit.append("\n   Adresses of the far beacons");
                     myEdit.append(Arrays.toString(list_device_address_far.toArray()));
-                    if (scan_number==100){
-                        double mean=0;
-                        for (int i=0;i<100;i+=1){
-                            mean+=list_rssi_2.get(i);
-                        }
-                        mean/=100;
-                        myEdit.append("\n   Mean founded= "+ mean);
-                        double std=0;
-                        for (int i=0;i<100;i+=1){
-                            std+=Math.pow(mean-list_rssi_2.get(i),2);
-                        }
-                        std/=100;
-                        std=Math.sqrt(std);
-                        myEdit.append("\n   Std founded= "+ std);
-                        WAITING_PERIOD=20000;
-                    }
                     //myEdit.append("\n   sorted: \n");
                     //myEdit.append(Arrays.toString(list_rssi.toArray()));
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
@@ -145,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     scanLeDevice(true);
                 }
-            }, SCAN_PERIOD+WAITING_PERIOD);
+            }, SCAN_PERIOD+15000);
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
         } else {
@@ -174,7 +151,6 @@ public class MainActivity extends AppCompatActivity {
                                if (list_device_address.contains(device.getAddress()) == false && name.contains("EST")) {
                                    list_device_address.add(device.getAddress());
                                    list_rssi.add(rssi);
-                                   list_rssi_2.add(rssi);
                                    count+=1;
                                    myEdit.append(device.getName() + " " + rssi + ", count: " + count + "\n");
                                }
