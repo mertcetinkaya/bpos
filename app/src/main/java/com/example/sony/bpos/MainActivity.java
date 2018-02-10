@@ -85,11 +85,14 @@ public class MainActivity extends AppCompatActivity {
             clearList(list_device_address_second);
             clearList(list_device_address_far);
             count=0;
+            mScanning = true;
+            mBluetoothAdapter.startLeScan(mLeScanCallback);
             // Stops scanning after a pre-defined scan period.
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     mScanning = false;
+                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
                     myEdit.append("\n   Total beacon count: " + count);
                     //List<Object> objectList = Arrays.asList(list_rssi.toArray());
                     //Collections.sort(list_rssi, Collections.reverseOrder());
@@ -114,7 +117,6 @@ public class MainActivity extends AppCompatActivity {
                     myEdit.append(Arrays.toString(list_device_address_far.toArray()));
                     //myEdit.append("\n   sorted: \n");
                     //myEdit.append(Arrays.toString(list_rssi.toArray()));
-                    mBluetoothAdapter.stopLeScan(mLeScanCallback);
                 }
             }, SCAN_PERIOD);
             mHandler.postDelayed(new Runnable() {
@@ -123,8 +125,7 @@ public class MainActivity extends AppCompatActivity {
                     scanLeDevice(true);
                 }
             }, SCAN_PERIOD+15000);
-            mScanning = true;
-            mBluetoothAdapter.startLeScan(mLeScanCallback);
+
         } else {
             mScanning = false;
             mBluetoothAdapter.stopLeScan(mLeScanCallback);
