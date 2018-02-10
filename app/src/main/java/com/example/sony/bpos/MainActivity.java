@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> list_device_address_first = new ArrayList<String>();
     List<String> list_device_address_second = new ArrayList<String>();
     List<String> list_device_address_far = new ArrayList<String>();
+    List<String> list_device_address_closest = new ArrayList<String>();
 
     private static final long SCAN_PERIOD = 7000;
     @Override
@@ -75,7 +76,6 @@ public class MainActivity extends AppCompatActivity {
     }
     int count;
     int x=0;
-    String closest_address;
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             myEdit.setText("");
@@ -84,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
             clearList(list_device_address_first);
             clearList(list_device_address_second);
             clearList(list_device_address_far);
+            clearList(list_device_address_closest);
             count=0;
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
@@ -105,10 +106,14 @@ public class MainActivity extends AppCompatActivity {
                         else
                             list_device_address_far.add(list_device_address.get(i));
                     }
-                    closest_address =list_device_address.get(list_rssi.indexOf(Collections.max(list_rssi)));
+                    for (int i=0;i<count;i+=1){
+                        if(list_rssi.get(i)==Collections.max(list_rssi)){
+                            list_device_address_closest.add(list_device_address.get(i));
+                        }
+                    }
                     myEdit.append("\n"+list_device_address+"\n");
-                    myEdit.append("\n   Address of the closest beacon: \n");
-                    myEdit.append(closest_address);
+                    myEdit.append("\n   Adresses of the closest beacons");
+                    myEdit.append(Arrays.toString(list_device_address_closest.toArray()));
                     myEdit.append("\n   Adresses of the beacons in closeness from first degree");
                     myEdit.append(Arrays.toString(list_device_address_first.toArray()));
                     myEdit.append("\n   Adresses of the beacons in closeness from second degree");
