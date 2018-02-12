@@ -4,26 +4,57 @@ import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentSender;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.database.DatabaseErrorHandler;
+import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.os.ParcelUuid;
+import android.os.UserHandle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
 import android.widget.EditText;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
-
+import android.os.Environment;
+import java.lang.Object;
+import java.lang.Integer;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1234;
+
+    private static final int MY_PERMISSIONS_REQUEST_STORAGE = 123456;
     private static final String ESTIMOTE_PROXIMITY_UUID = "B9407F30-F5F8-466E-AFF9-25556B57FE6D";
 
 
@@ -67,9 +98,89 @@ public class MainActivity extends AppCompatActivity {
         mHandler = new Handler();
         scanLeDevice(true);
 
+        if (getBaseContext().checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE}, MY_PERMISSIONS_REQUEST_STORAGE);
+        }
+
 
 
     }
+
+    //private final String fileName = "notes.txt";
+
+    private void writeFile(String data,String fileName) {
+
+        File extStore = Environment.getExternalStorageDirectory();
+        // ==> /storage/emulated/0/note.txt
+        String path =  "/sdcard/" + fileName;
+        Log.i("ExternalStorageDemo", "Save to: " + path);
+
+        //String listString = "";
+
+        //for (String s : list_device_address)
+        //{
+        //    listString += s + "\n";
+        //}
+
+        //String data = listString;
+
+        try {
+            File myFile = new File(path);
+            myFile.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(myFile, true);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(data);
+            myOutWriter.close();
+            fOut.close();
+
+            //Toast.makeText(getApplicationContext(), fileName + " saved", Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            //e.printStackTrace();
+            Log.e("fileWriter", e.getMessage());
+        }
+    }
+
+
+    public void writeToFile(String data)
+    {
+        // Get the directory for the user's public pictures directory.
+        final File path =
+                Environment.getExternalStoragePublicDirectory
+                        (
+                                //Environment.DIRECTORY_PICTURES
+                                Environment.DIRECTORY_DCIM + "/YourFolder/"
+                        );
+
+        // Make sure the path directory exists.
+        if(!path.exists())
+        {
+            // Make it, if it doesn't exit
+            path.mkdirs();
+        }
+
+        final File file = new File(path, "config.txt");
+
+        // Save your stream, don't forget to flush() it before closing it.
+
+        try
+        {
+            file.createNewFile();
+            FileOutputStream fOut = new FileOutputStream(file);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.append(data);
+
+            myOutWriter.close();
+
+            fOut.flush();
+            fOut.close();
+        }
+        catch (IOException e)
+        {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+    }
+
+
 
     private void clearList(List list){
         list.clear();
@@ -98,6 +209,15 @@ public class MainActivity extends AppCompatActivity {
                     //List<Object> objectList = Arrays.asList(list_rssi.toArray());
                     //Collections.sort(list_rssi, Collections.reverseOrder());
                     //x=list_rssi.get(0); //get first element
+
+                    //String listString = "";
+
+                    //for (String s : list_device_address)
+                    //{
+                    //    listString += s + "\t";
+                    //}
+
+
                     for (int i=0;i<count;i+=1){
                         if (list_rssi.get(i)>-83)
                             list_device_address_first.add(list_device_address.get(i));
@@ -120,8 +240,23 @@ public class MainActivity extends AppCompatActivity {
                     myEdit.append(Arrays.toString(list_device_address_second.toArray()));
                     myEdit.append("\n   Adresses of the far beacons");
                     myEdit.append(Arrays.toString(list_device_address_far.toArray()));
-                    //myEdit.append("\n   sorted: \n");
-                    //myEdit.append(Arrays.toString(list_rssi.toArray()));
+
+                    String listAdress = "";
+                    for (String x : list_device_address)
+                    {
+                        listAdress += x + "\n";
+                    }
+
+
+                    String listRSSI = "";
+                    for (int y : list_rssi)
+                    {
+                        listRSSI += y + "\n";
+                    }
+
+
+                    writeFile(listAdress, "notes1.txt");
+                    writeFile(listRSSI, "notes2.txt");
                 }
             }, SCAN_PERIOD);
             mHandler.postDelayed(new Runnable() {
@@ -152,19 +287,19 @@ public class MainActivity extends AppCompatActivity {
                                     Log.e("asdasda", "UUID: " + uuid.getUuid().toString());
                                 }
                             }
-                           String name = device.getName();
-                           if (name != null) {
-                               if (list_device_address.contains(device.getAddress()) == false && name.contains("EST")) {
-                                   list_device_address.add(device.getAddress());
-                                   list_rssi.add(rssi);
-                                   count+=1;
-                                   myEdit.append(device.getName() + " " + rssi + ", count: " + count + "\n");
-                               }
-                               //if (name.contains("EST")) {
-                               //   myEdit.append(device.getName() + " " + rssi + "\n");
-                               //}
-                           }
-                           //Log.e("asdasda",device.getName()+" "+" "+rssi+" "+device.getAddress());
+                            String name = device.getName();
+                            if (name != null) {
+                                if (list_device_address.contains(device.getAddress()) == false && name.contains("EST")) {
+                                    list_device_address.add(device.getAddress());
+                                    list_rssi.add(rssi);
+                                    count+=1;
+                                    myEdit.append(device.getName() + " " + rssi + ", count: " + count + "\n");
+                                }
+                                //if (name.contains("EST")) {
+                                //   myEdit.append(device.getName() + " " + rssi + "\n");
+                                //}
+                            }
+                            //Log.e("asdasda",device.getName()+" "+" "+rssi+" "+device.getAddress());
                         }
                     });
                 }
