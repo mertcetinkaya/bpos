@@ -36,6 +36,7 @@ import android.util.Log;
 import android.view.Display;
 import android.widget.EditText;
 
+import java.io.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     List<String> list_device_address_closest = new ArrayList<String>();
 
     private static final long SCAN_PERIOD = 7000;
+    private static final long RESTING_PERIOD = 5000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -106,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    //private final String fileName = "notes.txt";
 
     private void writeFile(String data,String fileName) {
 
@@ -115,14 +116,6 @@ public class MainActivity extends AppCompatActivity {
         String path =  "/sdcard/" + fileName;
         Log.i("ExternalStorageDemo", "Save to: " + path);
 
-        //String listString = "";
-
-        //for (String s : list_device_address)
-        //{
-        //    listString += s + "\n";
-        //}
-
-        //String data = listString;
 
         try {
             File myFile = new File(path);
@@ -139,48 +132,6 @@ public class MainActivity extends AppCompatActivity {
             Log.e("fileWriter", e.getMessage());
         }
     }
-
-
-    public void writeToFile(String data)
-    {
-        // Get the directory for the user's public pictures directory.
-        final File path =
-                Environment.getExternalStoragePublicDirectory
-                        (
-                                //Environment.DIRECTORY_PICTURES
-                                Environment.DIRECTORY_DCIM + "/YourFolder/"
-                        );
-
-        // Make sure the path directory exists.
-        if(!path.exists())
-        {
-            // Make it, if it doesn't exit
-            path.mkdirs();
-        }
-
-        final File file = new File(path, "config.txt");
-
-        // Save your stream, don't forget to flush() it before closing it.
-
-        try
-        {
-            file.createNewFile();
-            FileOutputStream fOut = new FileOutputStream(file);
-            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
-            myOutWriter.append(data);
-
-            myOutWriter.close();
-
-            fOut.flush();
-            fOut.close();
-        }
-        catch (IOException e)
-        {
-            Log.e("Exception", "File write failed: " + e.toString());
-        }
-    }
-
-
 
     private void clearList(List list){
         list.clear();
@@ -205,19 +156,8 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
+                    if (count==3){
                     myEdit.append("\n   Total beacon count: " + count);
-                    //List<Object> objectList = Arrays.asList(list_rssi.toArray());
-                    //Collections.sort(list_rssi, Collections.reverseOrder());
-                    //x=list_rssi.get(0); //get first element
-
-                    //String listString = "";
-
-                    //for (String s : list_device_address)
-                    //{
-                    //    listString += s + "\t";
-                    //}
-
-
                     for (int i=0;i<count;i+=1){
                         if (list_rssi.get(i)>-83)
                             list_device_address_first.add(list_device_address.get(i));
@@ -254,17 +194,16 @@ public class MainActivity extends AppCompatActivity {
                         listRSSI += y + "\n";
                     }
 
-
                     writeFile(listAdress, "notes1.txt");
                     writeFile(listRSSI, "notes2.txt");
-                }
+                }}
             }, SCAN_PERIOD);
             mHandler.postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     scanLeDevice(true);
                 }
-            }, SCAN_PERIOD+15000);
+            }, RESTING_PERIOD);
 
         } else {
             mScanning = false;
@@ -288,18 +227,18 @@ public class MainActivity extends AppCompatActivity {
                                 }
                             }
                             String name = device.getName();
+                            String address=device.getAddress();
                             if (name != null) {
-                                if (list_device_address.contains(device.getAddress()) == false && name.contains("EST")) {
-                                    list_device_address.add(device.getAddress());
+                                if (list_device_address.contains(address) == false && name.contains("EST")
+                                        && (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26"))) {
+                                    list_device_address.add(address);
                                     list_rssi.add(rssi);
                                     count+=1;
                                     myEdit.append(device.getName() + " " + rssi + ", count: " + count + "\n");
                                 }
-                                //if (name.contains("EST")) {
-                                //   myEdit.append(device.getName() + " " + rssi + "\n");
-                                //}
+
                             }
-                            //Log.e("asdasda",device.getName()+" "+" "+rssi+" "+device.getAddress());
+
                         }
                     });
                 }
