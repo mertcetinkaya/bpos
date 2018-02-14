@@ -52,6 +52,8 @@ import android.os.Environment;
 import java.lang.Object;
 import java.lang.Integer;
 
+
+
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_ENABLE_BT = 1234;
 
@@ -73,8 +75,13 @@ public class MainActivity extends AppCompatActivity {
     List<String> list_device_address_far = new ArrayList<String>();
     List<String> list_device_address_closest = new ArrayList<String>();
 
-    private static final long SCAN_PERIOD = 7000;
-    private static final long RESTING_PERIOD = 5000;
+    //List<String> list_device_address_to_save = new ArrayList<String>(Arrays.asList ( "C9:00:6A:7D:EF:B8" , "C5:EC:3D:11:FB:31" , "CB:7F:3D:BD:0D:26", "FD:15:89:12:5C:2E" ));
+    //List<Integer> list_rssi_to_save = new ArrayList<Integer>();
+
+
+
+    private static final long SCAN_PERIOD = 2000;
+    private static final long RESTING_PERIOD = 4000;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -156,47 +163,53 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    if (count==3){
-                    myEdit.append("\n   Total beacon count: " + count);
-                    for (int i=0;i<count;i+=1){
-                        if (list_rssi.get(i)>-83)
-                            list_device_address_first.add(list_device_address.get(i));
-                        else if (-83 >= list_rssi.get(i) && list_rssi.get(i)>-90)
-                            list_device_address_second.add(list_device_address.get(i));
-                        else
-                            list_device_address_far.add(list_device_address.get(i));
-                    }
-                    for (int i=0;i<count;i+=1){
-                        if(list_rssi.get(i)==Collections.max(list_rssi)){
-                            list_device_address_closest.add(list_device_address.get(i));
+                    if (count==4){
+                        myEdit.append("\n   Total beacon count: " + count);
+                        /*
+                        for (int i=0;i<count;i+=1){
+                            if (list_rssi.get(i)>-83)
+                                list_device_address_first.add(list_device_address.get(i));
+                            else if (-83 >= list_rssi.get(i) && list_rssi.get(i)>-90)
+                                list_device_address_second.add(list_device_address.get(i));
+                            else
+                                list_device_address_far.add(list_device_address.get(i));
                         }
+                        for (int i=0;i<count;i+=1){
+                            if(list_rssi.get(i)==Collections.max(list_rssi)){
+                                list_device_address_closest.add(list_device_address.get(i));
+                            }
+                        }*/
+                        myEdit.append("\n"+list_device_address+"\n");
+                        /*myEdit.append("\n   Adresses of the closest beacons");
+                        myEdit.append(Arrays.toString(list_device_address_closest.toArray()));
+                        myEdit.append("\n   Adresses of the beacons in closeness from first degree");
+                        myEdit.append(Arrays.toString(list_device_address_first.toArray()));
+                        myEdit.append("\n   Adresses of the beacons in closeness from second degree");
+                        myEdit.append(Arrays.toString(list_device_address_second.toArray()));
+                        myEdit.append("\n   Adresses of the far beacons");
+                        myEdit.append(Arrays.toString(list_device_address_far.toArray()));*/
+
+                        //for (int i=0;i<count;i+=1){
+                        //    list_rssi_to_save.add(list_rssi.get(list_device_address.indexOf(list_device_address_to_save.get(i))));
+                        //}
+
+                        String listAdress = "";
+                        for (String x : list_device_address)
+                        {
+                            listAdress += x + "\n";
+                        }
+
+
+                        String listRSSI = "";
+                        for (int y : list_rssi)
+                        {
+                            listRSSI += y + "\n";
+                        }
+
+                        writeFile(listAdress, "notes1.txt");
+                        writeFile(listRSSI, "notes2.txt");
                     }
-                    myEdit.append("\n"+list_device_address+"\n");
-                    myEdit.append("\n   Adresses of the closest beacons");
-                    myEdit.append(Arrays.toString(list_device_address_closest.toArray()));
-                    myEdit.append("\n   Adresses of the beacons in closeness from first degree");
-                    myEdit.append(Arrays.toString(list_device_address_first.toArray()));
-                    myEdit.append("\n   Adresses of the beacons in closeness from second degree");
-                    myEdit.append(Arrays.toString(list_device_address_second.toArray()));
-                    myEdit.append("\n   Adresses of the far beacons");
-                    myEdit.append(Arrays.toString(list_device_address_far.toArray()));
-
-                    String listAdress = "";
-                    for (String x : list_device_address)
-                    {
-                        listAdress += x + "\n";
-                    }
-
-
-                    String listRSSI = "";
-                    for (int y : list_rssi)
-                    {
-                        listRSSI += y + "\n";
-                    }
-
-                    writeFile(listAdress, "notes1.txt");
-                    writeFile(listRSSI, "notes2.txt");
-                }}
+                }
             }, SCAN_PERIOD);
             mHandler.postDelayed(new Runnable() {
                 @Override
@@ -229,8 +242,8 @@ public class MainActivity extends AppCompatActivity {
                             String name = device.getName();
                             String address=device.getAddress();
                             if (name != null) {
-                                if (list_device_address.contains(address) == false && name.contains("EST")
-                                        && (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26"))) {
+                                if (list_device_address.contains(address) == false && name.contains("EST") &&
+                                        (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26") || address.equals("FD:15:89:12:5C:2E"))) {
                                     list_device_address.add(address);
                                     list_rssi.add(rssi);
                                     count+=1;
