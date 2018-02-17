@@ -34,6 +34,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
+import android.view.View;
 import android.widget.EditText;
 
 import java.io.*;
@@ -49,6 +50,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Collections;
 import android.os.Environment;
+import android.widget.TextView;
+import android.widget.ToggleButton;
+
 import java.lang.Object;
 import java.lang.Integer;
 
@@ -75,8 +79,15 @@ public class MainActivity extends AppCompatActivity {
     List<String> list_device_address_far = new ArrayList<String>();
     List<String> list_device_address_closest = new ArrayList<String>();
 
+    ToggleButton logbut;
+    EditText logname;
+    boolean is_pressed=false;
+    String tag;
+
+
+
     //List<String> list_device_address_to_save = new ArrayList<String>(Arrays.asList ( "C9:00:6A:7D:EF:B8" , "C5:EC:3D:11:FB:31" , "CB:7F:3D:BD:0D:26", "FD:15:89:12:5C:2E" ));
-    //List<Integer> list_rssi_to_save = new ArrayList<Integer>();
+    List<String> list_to_write = new ArrayList<String>();
 
 
 
@@ -88,6 +99,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         myEdit=(EditText)findViewById(R.id.editText);
+        logname=(EditText)findViewById(R.id.textView);
+        logbut=(ToggleButton) findViewById(R.id.toggleButton);
+        logbut.setChecked(false);
+        logbut.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                is_pressed = logbut.isChecked();
+                if(is_pressed) {
+                    tag = logname.getText().toString();
+                }
+            }
+        });
 
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
@@ -123,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
         String path =  "/sdcard/" + fileName;
         Log.i("ExternalStorageDemo", "Save to: " + path);
 
-
         try {
             File myFile = new File(path);
             myFile.createNewFile();
@@ -150,10 +172,7 @@ public class MainActivity extends AppCompatActivity {
             myEdit.setText("");
             clearList(list_device_address);
             clearList(list_rssi);
-            clearList(list_device_address_first);
-            clearList(list_device_address_second);
-            clearList(list_device_address_far);
-            clearList(list_device_address_closest);
+            clearList(list_to_write);
             count=0;
             mScanning = true;
             mBluetoothAdapter.startLeScan(mLeScanCallback);
@@ -163,51 +182,81 @@ public class MainActivity extends AppCompatActivity {
                 public void run() {
                     mScanning = false;
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
-                    if (count==4){
-                        myEdit.append("\n   Total beacon count: " + count);
-                        /*
+
+                    myEdit.append("\n   Total beacon count: " + count);
+                    /*
+                    for (int i=0;i<count;i+=1){
+                        if (list_rssi.get(i)>-83)
+                            list_device_address_first.add(list_device_address.get(i));
+                        else if (-83 >= list_rssi.get(i) && list_rssi.get(i)>-90)
+                            list_device_address_second.add(list_device_address.get(i));
+                        else
+                            list_device_address_far.add(list_device_address.get(i));
+                    }
+                    for (int i=0;i<count;i+=1){
+                        if(list_rssi.get(i)==Collections.max(list_rssi)){
+                            list_device_address_closest.add(list_device_address.get(i));
+                        }
+                    }*/
+                    myEdit.append("\n"+list_device_address+"\n");
+                    /*myEdit.append("\n   Adresses of the closest beacons");
+                    myEdit.append(Arrays.toString(list_device_address_closest.toArray()));
+                    myEdit.append("\n   Adresses of the beacons in closeness from first degree");
+                    myEdit.append(Arrays.toString(list_device_address_first.toArray()));
+                    myEdit.append("\n   Adresses of the beacons in closeness from second degree");
+                    myEdit.append(Arrays.toString(list_device_address_second.toArray()));
+                    myEdit.append("\n   Adresses of the far beacons");
+                    myEdit.append(Arrays.toString(list_device_address_far.toArray()));*/
+
+                    //for (int i=0;i<count;i+=1){
+                    //    list_rssi_to_save.add(list_rssi.get(list_device_address.indexOf(list_device_address_to_save.get(i))));
+                    //}
+
+                    /*String listAdress = "";
+                    for (String x : list_device_address)
+                    {
+                        listAdress += x + "\n";
+                    }
+
+
+                    String listRSSI = "";
+                    for (int y : list_rssi)
+                    {
+                        listRSSI += y + "\n";
+                    }*/
+
+
+                    if(is_pressed) {
+                        Long tsLong = System.currentTimeMillis();
+                        String ts = tsLong.toString();
+                        list_to_write.add(ts);
+                        list_to_write.add(",");
+                        list_to_write.add(tag);
+                        list_to_write.add(",");
                         for (int i=0;i<count;i+=1){
-                            if (list_rssi.get(i)>-83)
-                                list_device_address_first.add(list_device_address.get(i));
-                            else if (-83 >= list_rssi.get(i) && list_rssi.get(i)>-90)
-                                list_device_address_second.add(list_device_address.get(i));
-                            else
-                                list_device_address_far.add(list_device_address.get(i));
+                            list_to_write.add(list_device_address.get(i));
+                            list_to_write.add(",");
+                            list_to_write.add(list_rssi.get(i).toString());
+                            if(i!=count-1)
+                                list_to_write.add(",");
+                            if(i==count-1)
+                                list_to_write.add("\n");
                         }
-                        for (int i=0;i<count;i+=1){
-                            if(list_rssi.get(i)==Collections.max(list_rssi)){
-                                list_device_address_closest.add(list_device_address.get(i));
-                            }
-                        }*/
-                        myEdit.append("\n"+list_device_address+"\n");
-                        /*myEdit.append("\n   Adresses of the closest beacons");
-                        myEdit.append(Arrays.toString(list_device_address_closest.toArray()));
-                        myEdit.append("\n   Adresses of the beacons in closeness from first degree");
-                        myEdit.append(Arrays.toString(list_device_address_first.toArray()));
-                        myEdit.append("\n   Adresses of the beacons in closeness from second degree");
-                        myEdit.append(Arrays.toString(list_device_address_second.toArray()));
-                        myEdit.append("\n   Adresses of the far beacons");
-                        myEdit.append(Arrays.toString(list_device_address_far.toArray()));*/
 
-                        //for (int i=0;i<count;i+=1){
-                        //    list_rssi_to_save.add(list_rssi.get(list_device_address.indexOf(list_device_address_to_save.get(i))));
-                        //}
-
-                        String listAdress = "";
-                        for (String x : list_device_address)
+                        String last_list_to_write = "";
+                        for (String x : list_to_write)
                         {
-                            listAdress += x + "\n";
+                            last_list_to_write += x + "";
                         }
 
 
-                        String listRSSI = "";
-                        for (int y : list_rssi)
-                        {
-                            listRSSI += y + "\n";
-                        }
+                        writeFile(last_list_to_write,"notes.csv");
 
-                        writeFile(listAdress, "notes1.txt");
-                        writeFile(listRSSI, "notes2.txt");
+
+
+
+                        //writeFile(listAdress, "notes1.txt");
+                        //writeFile(listRSSI, "notes2.txt");
                     }
                 }
             }, SCAN_PERIOD);
