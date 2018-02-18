@@ -232,7 +232,13 @@ public class MainActivity extends AppCompatActivity {
                         list_to_write.add(ts);
                         list_to_write.add(",");
                         list_to_write.add(tag);
-                        list_to_write.add(",");
+                        if(count>0){
+                            list_to_write.add(",");
+                        }
+                        if(count==0){
+                            list_to_write.add("\n");
+                        }
+
                         for (int i=0;i<count;i+=1){
                             list_to_write.add(list_device_address.get(i));
                             list_to_write.add(",");
