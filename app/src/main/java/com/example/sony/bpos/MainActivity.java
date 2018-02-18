@@ -230,8 +230,10 @@ public class MainActivity extends AppCompatActivity {
                         Long tsLong = System.currentTimeMillis();
                         String ts = tsLong.toString();
                         list_to_write.add(ts);
-                        list_to_write.add(",");
-                        list_to_write.add(tag);
+                        if(tag.isEmpty()==false){
+                            list_to_write.add(",");
+                            list_to_write.add(tag);
+                        }
                         if(count>0){
                             list_to_write.add(",");
                         }
