@@ -56,9 +56,19 @@ import android.widget.ToggleButton;
 import java.lang.Object;
 import java.lang.Integer;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
+
+import android.widget.Button;
+import android.widget.TextView;
+
+import android.view.View.OnClickListener;
 
 
-public class MainActivity extends AppCompatActivity {
+
+public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener {
     private static final int REQUEST_ENABLE_BT = 1234;
 
     private static final int MY_PERMISSIONS_REQUEST_STORAGE = 123456;
@@ -83,6 +93,9 @@ public class MainActivity extends AppCompatActivity {
     EditText logname;
     boolean is_pressed=false;
     String tag;
+    TextView TvSteps;
+    Button BtnStart;
+    Button BtnStop;
 
 
 
@@ -93,10 +106,55 @@ public class MainActivity extends AppCompatActivity {
 
     private static final long SCAN_PERIOD = 2000;
     private static final long RESTING_PERIOD = 4000;
-    @Override
+
+
+    private TextView textView;
+    private StepDetector simpleStepDetector;
+    private SensorManager sensorManager;
+    private Sensor accel;
+    private static final String TEXT_NUM_STEPS = "Number of Steps: ";
+    private int numSteps;
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        // Get an instance of the SensorManager
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        simpleStepDetector = new StepDetector();
+        simpleStepDetector.registerListener(this);
+
+        TvSteps = (TextView) findViewById(R.id.tv_steps);
+        BtnStart = (Button) findViewById(R.id.btn_start);
+        BtnStop = (Button) findViewById(R.id.btn_stop);
+
+        BtnStart.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+
+                numSteps = 0;
+                sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+
+            }
+        });
+
+
+        BtnStop.setOnClickListener(new OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+
+                sensorManager.unregisterListener(MainActivity.this);
+
+            }
+        });
+
+
+
+
 
         myEdit=(EditText)findViewById(R.id.editText);
         logname=(EditText)findViewById(R.id.textView);
@@ -136,6 +194,24 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+    }
+
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            simpleStepDetector.updateAccel(
+                    event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
+    }
+
+    @Override
+    public void step(long timeNs) {
+        numSteps++;
+        TvSteps.setText(TEXT_NUM_STEPS + numSteps);
     }
 
 
@@ -282,6 +358,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+
+
     private BluetoothAdapter.LeScanCallback mLeScanCallback =
             new BluetoothAdapter.LeScanCallback() {
                 @Override
@@ -318,3 +396,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 }
+
+
+
