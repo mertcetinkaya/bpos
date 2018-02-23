@@ -96,6 +96,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     TextView TvSteps;
     Button BtnStart;
     Button BtnStop;
+    boolean step_watched=false;
 
 
 
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             @Override
             public void onClick(View arg0) {
-
+                step_watched=true;
                 numSteps = 0;
                 sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
 
@@ -146,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             @Override
             public void onClick(View arg0) {
-
+                step_watched=false;
                 sensorManager.unregisterListener(MainActivity.this);
 
             }
@@ -306,6 +307,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         Long tsLong = System.currentTimeMillis();
                         String ts = tsLong.toString();
                         list_to_write.add(ts);
+                        if(step_watched){
+                            list_to_write.add(",");
+                            list_to_write.add(""+numSteps);
+                        }
                         if(tag.isEmpty()==false){
                             list_to_write.add(",");
                             list_to_write.add(tag);
