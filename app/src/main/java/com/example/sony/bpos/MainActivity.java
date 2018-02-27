@@ -88,6 +88,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     List<String> list_device_address_second = new ArrayList<String>();
     List<String> list_device_address_far = new ArrayList<String>();
     List<String> list_device_address_closest = new ArrayList<String>();
+    List<String> list_device_address_all = Arrays.asList("C5:EC:3D:11:FB:31","C9:00:6A:7D:EF:B8",
+            "CB:7F:3D:BD:0D:26","D2:30:33:DD:B0:4A","E0:BE:D2:07:A4:25","E6:89:33:0C:97:FB","F9:12:3C:FE:46:96","FD:15:89:12:5C:2E");
+    List<String> list_device_address_all_number = Arrays.asList("B1","B2","B3","B4","B5","B6","B7","B8");
+
 
     ToggleButton logbut;
     EditText logname;
@@ -212,7 +216,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void step(long timeNs) {
         numSteps++;
-        TvSteps.setText(TEXT_NUM_STEPS + numSteps);
+        TvSteps.setText(TEXT_NUM_STEPS + numSteps +", reference: " + reference_device_number + ", direction: " +direction);
     }
 
 
@@ -243,6 +247,13 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         list.clear();
     }
     int count;
+    public int direction;
+    int present_reference_index;
+    int previous_reference_index;
+    public String reference_device;
+    public String reference_device_number;
+    public String previous_reference;
+    public String present_reference;
     int x=0;
     private void scanLeDevice(final boolean enable) {
         if (enable) {
@@ -261,46 +272,25 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     mBluetoothAdapter.stopLeScan(mLeScanCallback);
 
                     myEdit.append("\n   Total beacon count: " + count);
-                    /*
-                    for (int i=0;i<count;i+=1){
-                        if (list_rssi.get(i)>-83)
-                            list_device_address_first.add(list_device_address.get(i));
-                        else if (-83 >= list_rssi.get(i) && list_rssi.get(i)>-90)
-                            list_device_address_second.add(list_device_address.get(i));
-                        else
-                            list_device_address_far.add(list_device_address.get(i));
-                    }
-                    for (int i=0;i<count;i+=1){
-                        if(list_rssi.get(i)==Collections.max(list_rssi)){
-                            list_device_address_closest.add(list_device_address.get(i));
-                        }
-                    }*/
                     myEdit.append("\n"+list_device_address+"\n");
-                    /*myEdit.append("\n   Adresses of the closest beacons");
-                    myEdit.append(Arrays.toString(list_device_address_closest.toArray()));
-                    myEdit.append("\n   Adresses of the beacons in closeness from first degree");
-                    myEdit.append(Arrays.toString(list_device_address_first.toArray()));
-                    myEdit.append("\n   Adresses of the beacons in closeness from second degree");
-                    myEdit.append(Arrays.toString(list_device_address_second.toArray()));
-                    myEdit.append("\n   Adresses of the far beacons");
-                    myEdit.append(Arrays.toString(list_device_address_far.toArray()));*/
-
-                    //for (int i=0;i<count;i+=1){
-                    //    list_rssi_to_save.add(list_rssi.get(list_device_address.indexOf(list_device_address_to_save.get(i))));
-                    //}
-
-                    /*String listAdress = "";
-                    for (String x : list_device_address)
-                    {
-                        listAdress += x + "\n";
+                    if(Collections.max(list_rssi)>=-65){
+                        int max_rssi=Collections.max(list_rssi);
+                        int max_rssi_index=list_rssi.indexOf(max_rssi);
+                        reference_device=list_device_address.get(max_rssi_index);
+                        reference_device_number=list_device_address_all_number.get(list_device_address_all.indexOf(reference_device));
+                        numSteps=0;
+                        present_reference=reference_device_number;
+                        present_reference_index=list_device_address_all_number.indexOf(present_reference);
+                        if((previous_reference_index+1)%list_device_address_all_number.size()==present_reference_index)
+                            direction=1;
+                        else if((previous_reference_index-1)%list_device_address_all_number.size()==present_reference_index)
+                            direction=2;
+                        else
+                            direction=-1;
+                        previous_reference_index=present_reference_index;
                     }
 
 
-                    String listRSSI = "";
-                    for (int y : list_rssi)
-                    {
-                        listRSSI += y + "\n";
-                    }*/
 
 
                     if(is_pressed) {
@@ -340,12 +330,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
                         writeFile(last_list_to_write,"notes.csv");
-
-
-
-
-                        //writeFile(listAdress, "notes1.txt");
-                        //writeFile(listRSSI, "notes2.txt");
                     }
                 }
             }, SCAN_PERIOD);
@@ -383,7 +367,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             String address=device.getAddress();
                             if (name != null) {
                                 if (list_device_address.contains(address) == false && name.contains("EST") &&
-                                        (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26") || address.equals("FD:15:89:12:5C:2E"))) {
+                                        (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26") || address.equals("FD:15:89:12:5C:2E")
+                                        || address.equals("D2:30:33:DD:B0:4A") || address.equals("E0:BE:D2:07:A4:25") || address.equals("F9:12:3C:FE:46:96") || address.equals("E6:89:33:0C:97:FB"))) {
                                     list_device_address.add(address);
                                     list_rssi.add(rssi);
                                     count+=1;
