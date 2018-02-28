@@ -109,8 +109,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
-    private static final long SCAN_PERIOD = 2000;
-    private static final long RESTING_PERIOD = 4000;
+    private static final long SCAN_PERIOD = 1000;
+    private static final long RESTING_PERIOD = 2000;
 
 
     private TextView textView;
@@ -273,7 +273,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     myEdit.append("\n   Total beacon count: " + count);
                     myEdit.append("\n"+list_device_address+"\n");
-                    if(Collections.max(list_rssi)>=-65){
+                    if(Collections.max(list_rssi)>=-78){
                         int max_rssi=Collections.max(list_rssi);
                         int max_rssi_index=list_rssi.indexOf(max_rssi);
                         reference_device=list_device_address.get(max_rssi_index);
