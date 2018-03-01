@@ -339,10 +339,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                     direction=1;
                                 else if(present_reference_index==previous_reference_index && present_rssi>=previous_rssi && direction==2)
                                     direction=2;
-                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==1)
+                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==1){
                                     direction=2;
-                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==2)
+                                    numSteps=0;
+                                }
+                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==2){
                                     direction=1;
+                                    numSteps=0;
+                                }
+
                                 else{
                                     direction=-1;
                                     numSteps=0;
