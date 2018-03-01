@@ -89,7 +89,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     List<String> list_device_address_far = new ArrayList<String>();
     List<String> list_device_address_closest = new ArrayList<String>();
     List<String> list_device_address_all = Arrays.asList("C5:EC:3D:11:FB:31","C9:00:6A:7D:EF:B8",
-            "CB:7F:3D:BD:0D:26","D2:30:33:DD:B0:4A","E0:BE:D2:07:A4:25","E6:89:33:0C:97:FB","F9:12:3C:FE:46:96","FD:15:89:12:5C:2E");
+            "CB:7F:3D:BD:0D:26","D3:8A:A2:B7:55:F7","E0:BE:D2:07:A4:25","E6:89:33:0C:97:FB","F9:12:3C:FE:46:96","FD:15:89:12:5C:2E");
     List<String> list_device_address_all_number = Arrays.asList("B1","B2","B3","B4","B5","B6","B7","B8");
 
 
@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sensorManager;
     private Sensor accel;
     private static final String TEXT_NUM_STEPS = "Number of Steps: ";
-    private int numSteps;
+    private int numSteps=0;
 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -254,7 +254,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public String reference_device_number;
     public String previous_reference;
     public String present_reference;
+    public boolean first_reference=true;
     int x=0;
+    int previous_rssi=-100;
     private void scanLeDevice(final boolean enable) {
         if (enable) {
             myEdit.setText("");
@@ -273,23 +275,86 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                     myEdit.append("\n   Total beacon count: " + count);
                     myEdit.append("\n"+list_device_address+"\n");
-                    if(Collections.max(list_rssi)>=-78){
+
+                    if(Collections.max(list_rssi)>=-80){
                         int max_rssi=Collections.max(list_rssi);
                         int max_rssi_index=list_rssi.indexOf(max_rssi);
                         reference_device=list_device_address.get(max_rssi_index);
                         reference_device_number=list_device_address_all_number.get(list_device_address_all.indexOf(reference_device));
-                        numSteps=0;
                         present_reference=reference_device_number;
                         present_reference_index=list_device_address_all_number.indexOf(present_reference);
-                        if((previous_reference_index+1)%list_device_address_all_number.size()==present_reference_index)
+
+/*
+                        if(list_rssi.get(list_device_address.indexOf(list_device_address_all.get(present_reference_index))) >
+                                list_rssi.get(list_device_address.indexOf(list_device_address_all.get(previous_reference_index))) && present_reference_index%8 >
+                                previous_reference_index%8)
                             direction=1;
-                        else if((previous_reference_index-1)%list_device_address_all_number.size()==present_reference_index)
+                        else if(list_rssi.get(list_device_address.indexOf(list_device_address_all.get(present_reference_index))) >
+                                list_rssi.get(list_device_address.indexOf(list_device_address_all.get(previous_reference_index))) && present_reference_index%8 <
+                                previous_reference_index%8)
                             direction=2;
+                        else if(list_rssi.get(list_device_address.indexOf(list_device_address_all.get(present_reference_index))) <
+                                list_rssi.get(list_device_address.indexOf(list_device_address_all.get(previous_reference_index))) && present_reference_index%8 <
+                                previous_reference_index%8)
+                            direction=2;
+                        else if(list_rssi.get(list_device_address.indexOf(list_device_address_all.get(present_reference_index))) <
+                                list_rssi.get(list_device_address.indexOf(list_device_address_all.get(previous_reference_index))) && present_reference_index%8 >
+                                previous_reference_index%8)
+                            direction=1;
                         else
                             direction=-1;
-                        previous_reference_index=present_reference_index;
-                    }
 
+*/
+
+
+                        int present_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(present_reference_index)));
+
+
+
+                        if((present_reference_index==7 && previous_reference_index==0) || (present_reference_index==7 && previous_reference_index==1) ){
+                            direction=2;
+                            numSteps=0;
+                        }
+
+                        else if((present_reference_index==0 && previous_reference_index==7) || (present_reference_index==1 && previous_reference_index==7)){
+                            direction=1;
+                            numSteps=0;
+                        }
+
+                        else{
+                            if((previous_reference_index+1)%list_device_address_all_number.size()==present_reference_index
+                                    || (previous_reference_index+2)%list_device_address_all_number.size()==present_reference_index){
+                                direction=1;
+                                numSteps=0;
+                            }
+
+                            else if((previous_reference_index-1)%list_device_address_all_number.size()==present_reference_index
+                                    || (previous_reference_index-2)%list_device_address_all_number.size()==present_reference_index){
+                                direction=2;
+                                numSteps=0;
+                            }
+
+                            else{
+                                if(present_reference_index==previous_reference_index && present_rssi>=previous_rssi && direction==1)
+                                    direction=1;
+                                else if(present_reference_index==previous_reference_index && present_rssi>=previous_rssi && direction==2)
+                                    direction=2;
+                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==1)
+                                    direction=2;
+                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==2)
+                                    direction=1;
+                                else{
+                                    direction=-1;
+                                    numSteps=0;
+                                }
+
+                            }
+
+                        }
+
+                        previous_reference_index=present_reference_index;
+                        previous_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(previous_reference_index)));
+                    }
 
 
 
@@ -368,11 +433,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             if (name != null) {
                                 if (list_device_address.contains(address) == false && name.contains("EST") &&
                                         (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26") || address.equals("FD:15:89:12:5C:2E")
-                                        || address.equals("D2:30:33:DD:B0:4A") || address.equals("E0:BE:D2:07:A4:25") || address.equals("F9:12:3C:FE:46:96") || address.equals("E6:89:33:0C:97:FB"))) {
+                                        || address.equals("D3:8A:A2:B7:55:F7") || address.equals("E0:BE:D2:07:A4:25") || address.equals("F9:12:3C:FE:46:96") || address.equals("E6:89:33:0C:97:FB"))) {
                                     list_device_address.add(address);
                                     list_rssi.add(rssi);
                                     count+=1;
-                                    myEdit.append(device.getName() + " " + rssi + ", count: " + count + "\n");
+                                    myEdit.append(device.getName() + ", " +list_device_address_all_number.get(list_device_address_all.indexOf(address))+ ", " + rssi + ", count: " + count + "\n");
                                 }
 
                             }
