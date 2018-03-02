@@ -303,7 +303,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             direction=1;
                         else
                             direction=-1;
-
 */
 
 
@@ -339,18 +338,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                     direction=1;
                                 else if(present_reference_index==previous_reference_index && present_rssi>=previous_rssi && direction==2)
                                     direction=2;
-                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==1){
-                                    direction=2;
-                                    numSteps=0;
-                                }
-                                else if(present_reference_index==previous_reference_index && present_rssi<previous_rssi && direction==2){
-                                    direction=1;
-                                    numSteps=0;
-                                }
 
                                 else{
-                                    direction=-1;
-                                    numSteps=0;
+                                    int a=present_reference_index-1;
+                                    int b=present_reference_index;
+                                    int c=present_reference_index+1;
+
+                                    if(a==-1) a=7;
+                                    if(c==8) c=0;
+
+                                    if(list_device_address.contains(list_device_address_all.get(a)) && list_device_address.contains(list_device_address_all.get(b))
+                                            && list_device_address.contains(list_device_address_all.get(c))){
+                                        int a_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(a)));
+                                        int b_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(b)));
+                                        int c_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(c)));
+
+                                        if((b==0 || b==1 || b==4 || b==5) && c_rssi>a_rssi){
+                                            if(direction==1)
+                                                direction=1;
+                                            else{
+                                                direction=1;
+                                                numSteps=0;
+                                            }
+                                        }
+                                        else if((b==0 || b==1 || b==4 || b==5) && a_rssi>c_rssi){
+                                            if(direction==2)
+                                                direction=2;
+                                            else{
+                                                direction=2;
+                                                numSteps=0;
+                                            }
+                                        }
+                                    }
+
+                                    else{
+                                        direction=-1;
+                                        numSteps=0;
+                                    }
                                 }
 
                             }
@@ -438,7 +462,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                             if (name != null) {
                                 if (list_device_address.contains(address) == false && name.contains("EST") &&
                                         (address.equals("C9:00:6A:7D:EF:B8") || address.equals("C5:EC:3D:11:FB:31") || address.equals("CB:7F:3D:BD:0D:26") || address.equals("FD:15:89:12:5C:2E")
-                                        || address.equals("D3:8A:A2:B7:55:F7") || address.equals("E0:BE:D2:07:A4:25") || address.equals("F9:12:3C:FE:46:96") || address.equals("E6:89:33:0C:97:FB"))) {
+                                                || address.equals("D3:8A:A2:B7:55:F7") || address.equals("E0:BE:D2:07:A4:25") || address.equals("F9:12:3C:FE:46:96") || address.equals("E6:89:33:0C:97:FB"))) {
                                     list_device_address.add(address);
                                     list_rssi.add(rssi);
                                     count+=1;
@@ -456,6 +480,3 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 }
-
-
-
