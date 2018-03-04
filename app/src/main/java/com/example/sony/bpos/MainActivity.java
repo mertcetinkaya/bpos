@@ -93,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     List<String> list_device_address_all_number = Arrays.asList("B1","B2","B3","B4","B5","B6","B7","B8");
 
 
+
+
+
     ToggleButton logbut;
     EditText logname;
     boolean is_pressed=false;
@@ -142,6 +145,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 step_watched=true;
                 numSteps = 0;
                 sensorManager.registerListener(MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
+
 
             }
         });
@@ -217,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void step(long timeNs) {
         numSteps++;
         TvSteps.setText(TEXT_NUM_STEPS + numSteps +", reference: " + reference_device_number + ", direction: " +direction);
+
     }
 
 
@@ -353,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                         int b_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(b)));
                                         int c_rssi=list_rssi.get(list_device_address.indexOf(list_device_address_all.get(c)));
 
-                                        if((b==0 || b==1 || b==4 || b==5) && c_rssi>a_rssi){
+                                        if(c_rssi>a_rssi){
                                             if(direction==1)
                                                 direction=1;
                                             else{
@@ -361,7 +366,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                                                 numSteps=0;
                                             }
                                         }
-                                        else if((b==0 || b==1 || b==4 || b==5) && a_rssi>c_rssi){
+                                        else if(a_rssi>c_rssi){
                                             if(direction==2)
                                                 direction=2;
                                             else{
@@ -388,6 +393,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
                     if(is_pressed) {
+                        /*
                         Long tsLong = System.currentTimeMillis();
                         String ts = tsLong.toString();
                         list_to_write.add(ts);
@@ -424,6 +430,26 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
                         writeFile(last_list_to_write,"notes.csv");
+                        */
+                        Long tsLong = System.currentTimeMillis();
+                        String ts = tsLong.toString();
+                        list_to_write.add(ts);
+                        list_to_write.add(",");
+                        list_to_write.add(""+direction);
+                        list_to_write.add(",");
+                        list_to_write.add(""+numSteps);
+                        list_to_write.add(",");
+                        list_to_write.add(reference_device_number);
+                        list_to_write.add("\n");
+                        String last_list_to_write = "";
+                        for (String x : list_to_write)
+                        {
+                            last_list_to_write += x + "";
+                        }
+
+
+                        writeFile(last_list_to_write,"notes.csv");
+
                     }
                 }
             }, SCAN_PERIOD);
